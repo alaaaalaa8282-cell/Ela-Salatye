@@ -1,4 +1,4 @@
-package com.mohamedabdelazeim.zekr.data.repository
+package com.mohamedabdelazeitm.zekr.data.repository
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
+import com.mohamedabdelazeitm.zekr.data.local.LocationEntity //
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
@@ -245,9 +246,3 @@ class SettingsRepository @Inject constructor(
     }
 }
 
-data class LocationEntity(
-    val latitude: Double,
-    val longitude: Double,
-    val locationName: String,
-    val timestamp: Long
-)
