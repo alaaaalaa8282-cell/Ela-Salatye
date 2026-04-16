@@ -1,4 +1,4 @@
-package com.mohamedabdelazeim.zekr.worker
+package com.mohamedabdelazeitm.zekr.worker
 
 import android.content.Context
 import android.location.Geocoder
@@ -7,14 +7,15 @@ import androidx.work.CoroutineWorker
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf  // ✅ FIX: import ناقص كان
 import com.batoulapps.adhan.*
 import com.batoulapps.adhan.data.DateComponents
-import com.mohamedabdelazeim.zekr.data.local.PrayerTimesDao
-import com.mohamedabdelazeim.zekr.data.local.PrayerTimesEntity
-import com.mohamedabdelazeim.zekr.data.repository.LocationRepository
-import com.mohamedabdelazeim.zekr.data.repository.SettingsRepository
-import com.mohamedabdelazeim.zekr.service.alarm.PrayerAlarmScheduler
-import com.mohamedabdelazeim.zekr.util.NotificationHelper
+import com.mohamedabdelazeitm.zekr.data.local.PrayerTimesDao
+import com.mohamedabdelazeitm.zekr.data.local.PrayerTimesEntity
+import com.mohamedabdelazeitm.zekr.data.repository.LocationRepository
+import com.mohamedabdelazeitm.zekr.data.repository.SettingsRepository
+import com.mohamedabdelazeitm.zekr.service.alarm.PrayerAlarmScheduler
+import com.mohamedabdelazeitm.zekr.util.NotificationHelper
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -53,7 +54,7 @@ class DailyPrayerWorker @AssistedInject constructor(
 
                 // إلغاء التنبيهات القديمة وجدولة الجديدة
                 prayerAlarmScheduler.cancelAllPrayerAlarms()
-                
+
                 prayers.forEach { prayer ->
                     prayerAlarmScheduler.schedulePrayerAlarm(
                         PrayerAlarmScheduler.PrayerTimeData(prayer.name, prayer.time)
@@ -63,7 +64,7 @@ class DailyPrayerWorker @AssistedInject constructor(
                 // تحديث الإشعار الدائم بمواقيت الصلاة
                 updateStickyNotification(prayers)
 
-                // جدولة تذكيرات "هل صليت؟" للصلوات
+                // جدولة تذكيرات "حل صليت" للصلوات
                 schedulePrayerReminders(prayers)
 
                 Result.success()
@@ -79,18 +80,19 @@ class DailyPrayerWorker @AssistedInject constructor(
         val date = DateComponents.from(Date())
         val calculationMethod = settingsRepository.getCalculationMethod()
 
-        val params = CalculationMethod.valueOf(calculationMethod).params
+        // ✅ FIX: .params → .parameters
+        val params = CalculationMethod.valueOf(calculationMethod).parameters
         params.madhab = Madhab.SHAFI
 
         val prayerTimes = PrayerTimes(coordinates, date, params)
 
         return listOf(
-            PrayerTimeData("الفجر", dateFormat.format(prayerTimes.fajr)),
-            PrayerTimeData("الشروق", dateFormat.format(prayerTimes.sunrise)),
-            PrayerTimeData("الظهر", dateFormat.format(prayerTimes.dhuhr)),
-            PrayerTimeData("العصر", dateFormat.format(prayerTimes.asr)),
-            PrayerTimeData("المغرب", dateFormat.format(prayerTimes.maghrib)),
-            PrayerTimeData("العشاء", dateFormat.format(prayerTimes.isha))
+            PrayerTimeData("الفجر",   dateFormat.format(prayerTimes.fajr)),
+            PrayerTimeData("الشروق",  dateFormat.format(prayerTimes.sunrise)),
+            PrayerTimeData("الظهر",   dateFormat.format(prayerTimes.dhuhr)),
+            PrayerTimeData("العصر",   dateFormat.format(prayerTimes.asr)),
+            PrayerTimeData("المغرب",  dateFormat.format(prayerTimes.maghrib)),
+            PrayerTimeData("العشاء",  dateFormat.format(prayerTimes.isha))
         )
     }
 
@@ -120,7 +122,7 @@ class DailyPrayerWorker @AssistedInject constructor(
 
             val monthNames = arrayOf(
                 "محرم", "صفر", "ربيع الأول", "ربيع الثاني",
-                "جمادى الأولى", "جمادى الآخرة", "رجب", "شعبان",
+                "جمادى الأولى", "جمادى الأخرة", "رجب", "شعبان",
                 "رمضان", "شوال", "ذو القعدة", "ذو الحجة"
             )
 
@@ -152,20 +154,21 @@ class DailyPrayerWorker @AssistedInject constructor(
     private fun updateStickyNotification(prayers: List<PrayerTimeData>) {
         val now = Date()
         val currentTime = dateFormat.format(now)
-        
+
+        // ✅ FIX: الفهارس الصحيحة (تخطي الشروق index=1)
         val prayerList = listOf(
-            "الفجر" to prayers[0].time,
-            "الظهر" to prayers[1].time,
-            "العصر" to prayers[2].time,
-            "المغرب" to prayers[3].time,
-            "العشاء" to prayers[4].time
+            "الفجر"  to prayers[0].time,
+            "الظهر"  to prayers[2].time,
+            "العصر"  to prayers[3].time,
+            "المغرب" to prayers[4].time,
+            "العشاء" to prayers[5].time
         )
-        
+
         val nextPrayer = prayerList.firstOrNull { it.second > currentTime }
-            ?: prayerList.firstOrNull()?.copy(first = "${prayerList.first().first} (غداً)")
-        
+            ?: prayerList.firstOrNull()?.copy(first = "${prayerList.first().first} (غدا)")
+
         val allTimes = prayerList.joinToString("\n") { "${it.first}: ${it.second}" }
-        
+
         if (nextPrayer != null) {
             val notification = notificationHelper.showStickyPrayerTimesNotification(
                 nextPrayer.first,
@@ -178,16 +181,16 @@ class DailyPrayerWorker @AssistedInject constructor(
 
     private fun schedulePrayerReminders(prayers: List<PrayerTimeData>) {
         val prayerNames = listOf("الفجر", "الظهر", "العصر", "المغرب", "العشاء")
-        
+
         prayerNames.forEach { prayerName ->
             val reminderWork = OneTimeWorkRequestBuilder<PrayerReminderWorker>()
                 .setInitialDelay(30, TimeUnit.MINUTES)
                 .setInputData(
-                    workDataOf("prayer_name" to prayerName)
+                    workDataOf("prayer_name" to prayerName)  // ✅ FIX: import موجود دلوقتي
                 )
                 .addTag("prayer_reminder_$prayerName")
                 .build()
-            
+
             WorkManager.getInstance(applicationContext).enqueue(reminderWork)
         }
     }
@@ -197,3 +200,4 @@ class DailyPrayerWorker @AssistedInject constructor(
         val time: String
     )
 }
+
