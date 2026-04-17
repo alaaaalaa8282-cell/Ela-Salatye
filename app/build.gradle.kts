@@ -59,8 +59,12 @@ android {
 
 kapt {
     correctErrorTypes = true
+    useBuildCache = false
+    arguments {
+        arg("dagger.hilt.android.internal.disableAndroidSuperclassValidation", "true")
+        arg("dagger.hilt.disableCrossCompilationRootValidation", "true")
+    }
 }
-
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
     implementation(composeBom)
