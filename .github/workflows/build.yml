@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name:  تحميل الكود
+      - name: 📥 تحميل الكود
         uses: actions/checkout@v4
 
       - name: ☕ تثبيت جافا 17
@@ -19,20 +19,22 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # 🛠️ الخطوة الجديدة: إصلاح الملف الفارغ وتنزيل الملف الصحيح
-      - name: 🔧 إصلاح ملف Gradle التالف (تنزيل النسخة الصحيحة)
+      - name: 🔧 إصلاح ملف Gradle
         run: |
           mkdir -p gradle/wrapper
           curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.7.0/gradle/wrapper/gradle-wrapper.jar
 
-      - name: 🔧 تشغيلgradlew
+      - name: 🔧 تشغيل gradlew
         run: chmod +x gradlew
 
-      - name: 🏗️ بناء تطبيق الى صلاتى
-        run: ./gradlew assembleRelease
+      - name: 🧹 تنظيف المشروع
+        run: ./gradlew clean
+
+      - name: 🏗️ بناء تطبيق الى صلاتى (Debug)
+        run: ./gradlew assembleDebug
 
       - name: 📦 حفظ ملف التطبيق
         uses: actions/upload-artifact@v4
         with:
           name: الى-صلاتى-Mohamed-Abdelazim
-          path: app/build/outputs/apk/release/*.apk
+          path: app/build/outputs/apk/debug/*.apk
