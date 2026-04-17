@@ -27,8 +27,14 @@ jobs:
       - name: 🔧 تشغيل gradlew
         run: chmod +x gradlew
 
-      - name: 🏗️ بناء بدون KAPT (يتخطى المشكلة)
-        run: ./gradlew assembleDebug -x kaptDebugKotlin
+      - name: 🏗️ بناء مع إعادة المحاولة
+        run: |
+          # محاولة أولى
+          ./gradlew assembleDebug --no-daemon || \
+          # لو فشلت، انتظر 30 ثانية وحاول تاني
+          (sleep 30 && ./gradlew assembleDebug --no-daemon --refresh-dependencies) || \
+          # لو لسه فشلت، حاول تالت
+          (sleep 60 && ./gradlew assembleDebug --no-daemon --refresh-dependencies)
 
       - name: 📦 حفظ ملف التطبيق
         uses: actions/upload-artifact@v4
