@@ -1,39 +1,31 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
-    id("dagger.hilt.android.plugin")
+    id("com.google.dagger.hilt.android")
     id("com.google.devtools.ksp")
+    id("kotlin-kapt")
 }
 
 android {
-    namespace = "com.mohamedabdelazeim.zekr"
-    compileSdk = 34
+    namespace = "com.mohamedabdelazeitm.zekr"
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.mohamedabdelazeim.zekr"
+        applicationId = "com.mohamedabdelazeitm.zekr"
         minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
-        }
-        
-        ndk {
-            abiFilters.add("armeabi-v7a")
-            abiFilters.add("arm64-v8a")
-            abiFilters.add("x86")
-            abiFilters.add("x86_64")
         }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -46,8 +38,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
+    kotlin {
+        jvmToolchain(17)
     }
 
     buildFeatures {
@@ -55,7 +47,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.4"
+        kotlinCompilerExtensionVersion = "1.5.15"
     }
 
     packaging {
@@ -63,52 +55,70 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    
-    kapt {
-        correctErrorTypes = true
-    }
+}
+
+kapt {
+    correctErrorTypes = true
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2023.10.01")
+    val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
     implementation(composeBom)
-    
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.activity:activity-compose:1.8.0")
-    
+    androidTestImplementation(composeBom)
+
+    // Core Android
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
+    implementation("androidx.activity:activity-compose:1.9.0")
+
+    // Compose UI
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
-    
-    implementation("androidx.navigation:navigation-compose:2.7.5")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
-    
-    implementation("androidx.room:room-runtime:2.6.0")
-    implementation("androidx.room:room-ktx:2.6.0")
-    ksp("androidx.room:room-compiler:2.6.0")
-    
-    implementation("androidx.datastore:datastore-preferences:1.0.0")
-    implementation("androidx.work:work-runtime-ktx:2.9.0")
-    
-    implementation("com.google.dagger:hilt-android:2.48")
-    kapt("com.google.dagger:hilt-compiler:2.48")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
-    implementation("androidx.hilt:hilt-work:1.1.0")
-    kapt("androidx.hilt:hilt-compiler:1.1.0")
-    
-    implementation("com.google.android.gms:play-services-location:21.0.1")
-    implementation("com.batoulapps.adhan:adhan-kotlin:1.1.0")
+
+    // Navigation
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // ViewModel & Lifecycle
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.2")
+
+    // Room Database
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+
+    // DataStore
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+
+    // Hilt
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    implementation("androidx.hilt:hilt-work:1.2.0")
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
+
+    // Location
+    implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    // Adhan Library
+    implementation("com.batoulapps.adhan:adhan:1.2.1")
+
+    // Hijri Calendar
     implementation("com.github.msarhan:ummalqura-calendar:2.0.2")
-    
-    implementation("com.google.accompanist:accompanist-permissions:0.32.0")
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.32.0")
-    
-    implementation("com.google.code.gson:gson:2.10.1")
-    
+
+    // Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+
+    // System UI Controller
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.34.0")
+
+    // Debug
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
